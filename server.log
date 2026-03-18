@@ -1,0 +1,39 @@
+
+> tracking-app@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 2.9s
+ ○ Compiling /admin/login ...
+ ✓ Compiled /admin/login in 13s (1340 modules)
+ GET /admin/login 200 in 14652ms
+ ✓ Compiled in 1554ms (657 modules)
+ GET /admin/login? 200 in 226ms
+ GET /admin/login 200 in 52ms
+ ○ Compiling /api/admin/login ...
+ ✓ Compiled /api/admin/login in 814ms (697 modules)
+ POST /api/admin/login 200 in 1306ms
+ ○ Compiling /admin/dashboard ...
+ ✓ Compiled /admin/dashboard in 718ms (1364 modules)
+ ✓ Compiled /api/admin/stats in 226ms (712 modules)
+ GET /api/admin/stats 200 in 277ms
+ GET /api/admin/stats 200 in 45ms
+ ✓ Compiled /api/admin/shipments in 189ms (714 modules)
+ GET /api/admin/shipments 200 in 239ms
+ GET /api/admin/shipments 200 in 14ms
+ POST /api/admin/shipments 200 in 25ms
+ GET /api/admin/stats 200 in 19ms
+ GET /api/admin/shipments 200 in 15ms
+ ○ Compiling /track ...
+ ✓ Compiled /track in 942ms (1378 modules)
+ GET /track 200 in 1140ms
+ ✓ Compiled /api/user/login in 214ms (722 modules)
+ POST /api/user/login 200 in 265ms
+ ✓ Compiled /track/[id] in 451ms (1398 modules)
+ ✓ Compiled /api/user/shipments/[id] in 270ms (734 modules)
+ GET /api/user/shipments/474045e2-951c-4082-8a20-42079b1bde64 200 in 876ms
+ GET /api/user/shipments/474045e2-951c-4082-8a20-42079b1bde64 200 in 29ms
