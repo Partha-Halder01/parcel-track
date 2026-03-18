@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0B0F19; /* Deep dark blue */
+  --foreground: #F8FAFC; /* Slate 50 */
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-lg;
+  }
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl;
+  }
+  .glass-input {
+    @apply bg-white/5 backdrop-blur-sm border border-white/20 focus:border-neon-blue focus:ring-1 focus:ring-neon-blue outline-none text-white rounded-lg px-4 py-3 transition-all duration-300;
+  }
+  .glass-button {
+    @apply bg-gradient-to-r from-neon-blue to-neon-green text-black font-bold py-3 px-6 rounded-lg hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] transition-all duration-300 transform hover:-translate-y-1;
+  }
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-neon-blue to-neon-green;
+  }
+}

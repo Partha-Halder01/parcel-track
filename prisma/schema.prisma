@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Shipment {
+  id             String          @id @default(uuid())
+  trackingId     String          @unique
+  password       String
+  senderName     String
+  receiverName   String
+  address        String
+  parcelType     String
+  status         String          @default("Order Placed")
+  estimatedDelivery DateTime?
+  timeline       TimelineEvent[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model TimelineEvent {
+  id          String   @id @default(uuid())
+  shipmentId  String
+  status      String
+  description String?
+  location    String?
+  timestamp   DateTime @default(now())
+  shipment    Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+}
