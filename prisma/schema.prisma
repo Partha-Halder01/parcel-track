@@ -24,6 +24,7 @@ model Shipment {
   parcelType     String
   status         String          @default("Order Placed")
   estimatedDelivery DateTime?
+  shareToken     String?         @unique
   timeline       TimelineEvent[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt

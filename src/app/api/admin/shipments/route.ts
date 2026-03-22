@@ -11,11 +11,30 @@ function generatePassword() {
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '0')
+    const search = searchParams.get('search') || ''
+
+    const where = search ? {
+      OR: [
+        { trackingId: { contains: search } },
+        { senderName: { contains: search } },
+        { receiverName: { contains: search } },
+        { address: { contains: search } },
+      ]
+    } : {}
+
+    const total = await prisma.shipment.count({ where })
+
     const shipments = await prisma.shipment.findMany({
+      where,
       include: { timeline: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      ...(limit > 0 ? { skip: (page - 1) * limit, take: limit } : {}),
     })
-    return NextResponse.json(shipments)
+
+    return NextResponse.json({ shipments, total, page, totalPages: limit > 0 ? Math.ceil(total / limit) : 1 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch shipments' }, { status: 500 })
   }

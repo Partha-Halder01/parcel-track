@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" fill="none">
+  <defs>
+    <linearGradient id="box1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#237227"/>
+      <stop offset="100%" stop-color="#1A5C1E"/>
+    </linearGradient>
+    <linearGradient id="box2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFAA00"/>
+      <stop offset="100%" stop-color="#E69900"/>
+    </linearGradient>
+    <linearGradient id="box3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#519A66"/>
+      <stop offset="100%" stop-color="#3D8050"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shadow -->
+  <ellipse cx="250" cy="460" rx="180" ry="25" fill="#237227" opacity="0.06"/>
+
+  <!-- Back box (large, green) -->
+  <g transform="translate(120, 160)">
+    <rect x="0" y="0" width="200" height="160" rx="14" fill="url(#box1)"/>
+    <!-- Tape horizontal -->
+    <rect x="0" y="70" width="200" height="16" rx="2" fill="#FFAA00" opacity="0.7"/>
+    <!-- Tape vertical -->
+    <rect x="88" y="0" width="20" height="160" rx="2" fill="#FFAA00" opacity="0.5"/>
+    <!-- Fragile sticker -->
+    <g transform="translate(140, 20)">
+      <rect x="0" y="0" width="45" height="35" rx="4" fill="white" opacity="0.9"/>
+      <text x="22" y="15" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" font-weight="700" fill="#237227">FRAGILE</text>
+      <text x="22" y="27" text-anchor="middle" font-family="Arial, sans-serif" font-size="12">&#9888;</text>
+    </g>
+  </g>
+
+  <!-- Middle box (gold, tilted) -->
+  <g transform="translate(200, 220) rotate(-8)">
+    <rect x="0" y="0" width="160" height="130" rx="12" fill="url(#box2)"/>
+    <!-- Tape -->
+    <rect x="0" y="55" width="160" height="14" rx="2" fill="#FFD786" opacity="0.8"/>
+    <rect x="70" y="0" width="16" height="130" rx="2" fill="#FFD786" opacity="0.6"/>
+    <!-- NX label -->
+    <g transform="translate(15, 15)">
+      <rect x="0" y="0" width="42" height="30" rx="6" fill="#237227"/>
+      <text x="21" y="20" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="12" font-weight="900" fill="white">NX</text>
+    </g>
+  </g>
+
+  <!-- Front box (medium green, slightly tilted other way) -->
+  <g transform="translate(100, 290) rotate(5)">
+    <rect x="0" y="0" width="140" height="110" rx="10" fill="url(#box3)"/>
+    <!-- Tape -->
+    <rect x="0" y="45" width="140" height="12" rx="2" fill="#FFD786" opacity="0.6"/>
+    <rect x="60" y="0" width="14" height="110" rx="2" fill="#FFD786" opacity="0.4"/>
+    <!-- Barcode -->
+    <g transform="translate(15, 15)">
+      <rect x="0" y="0" width="50" height="25" rx="3" fill="white" opacity="0.85"/>
+      <rect x="5" y="5" width="2" height="12" fill="#333"/>
+      <rect x="9" y="5" width="1" height="12" fill="#333"/>
+      <rect x="12" y="5" width="3" height="12" fill="#333"/>
+      <rect x="17" y="5" width="1" height="12" fill="#333"/>
+      <rect x="20" y="5" width="2" height="12" fill="#333"/>
+      <rect x="24" y="5" width="3" height="12" fill="#333"/>
+      <rect x="29" y="5" width="1" height="12" fill="#333"/>
+      <rect x="32" y="5" width="2" height="12" fill="#333"/>
+      <rect x="36" y="5" width="3" height="12" fill="#333"/>
+      <rect x="41" y="5" width="1" height="12" fill="#333"/>
+    </g>
+  </g>
+
+  <!-- Small floating parcel top-right -->
+  <g transform="translate(360, 100) rotate(-15)">
+    <rect x="0" y="0" width="70" height="55" rx="8" fill="#FFD786"/>
+    <rect x="0" y="22" width="70" height="8" rx="2" fill="#FFAA00" opacity="0.6"/>
+    <rect x="30" y="0" width="8" height="55" rx="2" fill="#FFAA00" opacity="0.4"/>
+  </g>
+
+  <!-- Checkmark badge -->
+  <g transform="translate(380, 300)">
+    <circle cx="0" cy="0" r="28" fill="white" stroke="#D4ECD4" stroke-width="2"/>
+    <circle cx="0" cy="0" r="18" fill="#237227"/>
+    <path d="M-8 0 L-3 5 L8 -6" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Speed/motion lines -->
+  <rect x="60" y="310" width="25" height="3" rx="1.5" fill="#519A66" opacity="0.2"/>
+  <rect x="50" y="330" width="35" height="3" rx="1.5" fill="#519A66" opacity="0.15"/>
+  <rect x="70" y="350" width="20" height="3" rx="1.5" fill="#519A66" opacity="0.1"/>
+</svg>

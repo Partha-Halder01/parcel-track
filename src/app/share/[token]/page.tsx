@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useParams, useRouter } from 'next/navigation'
-import { CheckCircle2, CircleDashed, LogOut, MapPin, Package, Clock, Truck, ShieldCheck } from 'lucide-react'
+import { CheckCircle2, CircleDashed, MapPin, Package, Clock, Truck, ShieldCheck, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
 
 const STATUS_STEPS = ['Order Placed', 'Dispatched', 'In Transit', 'Out for Delivery', 'Delivered']
@@ -16,25 +16,27 @@ const statusStyle: Record<string, { badge: string; dot: string; card: string }> 
   'Delivered':        { badge: 'badge badge-green',  dot: 'bg-emerald-500', card: 'bg-emerald-50 border-emerald-200' },
 }
 
-export default function TrackDashboard() {
+export default function ShareTracking() {
   const params = useParams()
   const router = useRouter()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem('userToken')
-    if (token !== params.id) { router.push('/track'); return }
-    const fetch_ = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`/api/user/shipments/${params.id}`)
+        const res = await fetch(`/api/share/${params.token}`)
         if (res.ok) setData(await res.json())
-        else router.push('/track')
-      } catch (e) { console.error(e) }
-      finally { setLoading(false) }
+        else setError(true)
+      } catch {
+        setError(true)
+      } finally {
+        setLoading(false)
+      }
     }
-    fetch_()
-  }, [params.id, router])
+    fetchData()
+  }, [params.token])
 
   if (loading) {
     return (
@@ -47,30 +49,43 @@ export default function TrackDashboard() {
     )
   }
 
+  if (error || !data) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 px-5">
+        <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center">
+          <AlertCircle size={32} className="text-red-400" />
+        </div>
+        <h1 className="text-[22px] font-black text-[#0A0A0A] tracking-tight">Invalid Share Link</h1>
+        <p className="text-[14px] text-[#787878] text-center max-w-xs">This tracking link is invalid or has expired. Please request a new link from the sender.</p>
+        <button onClick={() => router.push('/')} className="btn-accent mt-4 text-[14px] px-6 py-3">
+          Go to Homepage
+        </button>
+      </div>
+    )
+  }
+
   const stepIdx = STATUS_STEPS.indexOf(data?.status)
   const progress = Math.round(((stepIdx + 1) / STATUS_STEPS.length) * 100)
   const sStyle = statusStyle[data?.status] || statusStyle['Order Placed']
 
   return (
     <div className="bg-[#F0F7F0] min-h-screen">
-      {/* Custom minimal nav for tracking page */}
+      {/* Minimal nav */}
       <nav className="bg-white border-b border-[#E8E8E8] sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
           <button onClick={() => router.push('/')}>
             <Image src="/images/logo.png" alt="OneWorldCourier" width={140} height={40} className="h-[36px] w-auto object-contain" />
           </button>
-          <button
-            onClick={() => { localStorage.removeItem('userToken'); router.push('/track') }}
-            className="flex items-center gap-2 text-[13px] font-semibold text-[#787878] hover:text-red-600 transition-colors"
-          >
-            <LogOut size={15} /> Sign out
-          </button>
+          <div className="flex items-center gap-2 bg-[#F0F7F0] border border-[#D4ECD4] rounded-full px-3 py-1.5">
+            <ShieldCheck size={13} className="text-[#237227]" />
+            <span className="text-[11px] font-bold text-[#237227] tracking-wider uppercase">Secure Share</span>
+          </div>
         </div>
       </nav>
 
       <main className="max-w-5xl mx-auto px-6 py-10 space-y-5">
 
-        {/* ─── Status top banner ─── */}
+        {/* Status banner */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -96,7 +111,7 @@ export default function TrackDashboard() {
           )}
         </motion.div>
 
-        {/* ─── Shipment info card ─── */}
+        {/* Shipment info */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,14 +127,14 @@ export default function TrackDashboard() {
           </div>
           <div className="px-7 py-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[
-              { icon: ShieldCheck, label: 'Receiver',         value: data?.receiverName, c: 'text-[#237227]' },
-              { icon: Package,     label: 'Parcel Type',      value: data?.parcelType,   c: 'text-[#237227]' },
-              { icon: MapPin,      label: 'Destination',      value: data?.address,      c: 'text-[#237227]' },
-              { icon: Clock,       label: 'Est. Delivery',    value: data?.estimatedDelivery ? new Date(data.estimatedDelivery).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Pending', c: 'text-[#237227]' },
+              { icon: ShieldCheck, label: 'Receiver',      value: data?.receiverName },
+              { icon: Package,     label: 'Parcel Type',   value: data?.parcelType },
+              { icon: MapPin,      label: 'Destination',   value: data?.address },
+              { icon: Clock,       label: 'Est. Delivery', value: data?.estimatedDelivery ? new Date(data.estimatedDelivery).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Pending' },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-4">
                 <div className="w-9 h-9 bg-[#F0F7F0] border border-[#E8E8E8] rounded-xl flex items-center justify-center shrink-0">
-                  <item.icon size={17} className={item.c} />
+                  <item.icon size={17} className="text-[#237227]" />
                 </div>
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider text-[#aaaaaa] mb-0.5">{item.label}</p>
@@ -130,7 +145,7 @@ export default function TrackDashboard() {
           </div>
         </motion.div>
 
-        {/* ─── Progress tracker ─── */}
+        {/* Progress tracker */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -143,8 +158,6 @@ export default function TrackDashboard() {
             </h2>
             <span className="text-[13px] font-bold text-[#237227]">{progress}% complete</span>
           </div>
-
-          {/* Bar */}
           <div className="h-2 bg-[#F0F0EE] rounded-full overflow-hidden mb-8">
             <motion.div
               initial={{ width: 0 }}
@@ -153,8 +166,6 @@ export default function TrackDashboard() {
               className="h-full bg-[#237227] rounded-full"
             />
           </div>
-
-          {/* Steps */}
           <div className="flex items-start justify-between gap-1 relative">
             <div className="absolute top-4 left-0 right-0 h-px bg-[#F0F0EE] z-0" />
             {STATUS_STEPS.map((step, i) => {
@@ -169,29 +180,21 @@ export default function TrackDashboard() {
                   className="flex flex-col items-center gap-2 flex-1 relative z-10"
                 >
                   <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
-                    done
-                      ? 'bg-[#237227] border-[#237227]'
-                      : 'bg-white border-[#E8E8E8]'
+                    done ? 'bg-[#237227] border-[#237227]' : 'bg-white border-[#E8E8E8]'
                   }`}>
-                    {done
-                      ? <CheckCircle2 size={15} className="text-white" />
-                      : <CircleDashed size={15} className="text-[#D0D0D0]" />}
+                    {done ? <CheckCircle2 size={15} className="text-white" /> : <CircleDashed size={15} className="text-[#D0D0D0]" />}
                   </div>
-                  {active && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#237227]/40 rounded-full animate-ping" />
-                  )}
+                  {active && <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#237227]/40 rounded-full animate-ping" />}
                   <p className={`text-[10px] text-center font-semibold max-w-[56px] leading-tight ${
                     done ? (active ? 'text-[#237227]' : 'text-[#0A0A0A]') : 'text-[#D0D0D0]'
-                  }`}>
-                    {step}
-                  </p>
+                  }`}>{step}</p>
                 </motion.div>
               )
             })}
           </div>
         </motion.div>
 
-        {/* ─── Timeline ─── */}
+        {/* Timeline */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -201,7 +204,6 @@ export default function TrackDashboard() {
           <h2 className="text-[17px] font-black text-[#0A0A0A] tracking-tight flex items-center gap-2 mb-8">
             <Clock size={18} className="text-[#237227]" /> Shipment History
           </h2>
-
           <div className="relative space-y-5">
             <div className="absolute left-4 top-4 bottom-4 w-px bg-[#F0F0EE] z-0" />
             {data?.timeline?.map((ev: any, idx: number) => {
@@ -218,9 +220,7 @@ export default function TrackDashboard() {
                   <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${
                     isFirst ? 'bg-[#237227] border-[#237227]' : 'bg-white border-[#E8E8E8]'
                   }`}>
-                    {isFirst
-                      ? <CheckCircle2 size={14} className="text-white" />
-                      : <CircleDashed size={14} className="text-[#D0D0D0]" />}
+                    {isFirst ? <CheckCircle2 size={14} className="text-white" /> : <CircleDashed size={14} className="text-[#D0D0D0]" />}
                   </div>
                   <div className={`flex-1 border rounded-xl p-4 ${evStyle.card}`}>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">

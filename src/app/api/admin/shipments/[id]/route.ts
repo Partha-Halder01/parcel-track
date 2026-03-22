@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const data = await req.json()
-    const { status, description, location, estimatedDelivery } = data
+    const { status, description, location, estimatedDelivery, timestamp } = data
 
     const shipment = await prisma.shipment.update({
       where: { id: params.id },
@@ -36,6 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           status: status || shipment.status,
           description,
           location,
+          ...(timestamp ? { timestamp: new Date(timestamp) } : {}),
         }
       })
     }

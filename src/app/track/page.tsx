@@ -3,11 +3,15 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { Package, Search, Lock, Loader2 } from 'lucide-react'
+import { Search, Lock, Loader2, ArrowRight, Package, Eye, EyeOff } from 'lucide-react'
+import Link from 'next/link'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 
 export default function TrackLogin() {
   const [trackingId, setTrackingId] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -16,87 +20,129 @@ export default function TrackLogin() {
     e.preventDefault()
     setError('')
     setLoading(true)
-
     try {
       const res = await fetch('/api/user/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trackingId, password })
+        body: JSON.stringify({ trackingId, password }),
       })
       const data = await res.json()
-
       if (res.ok) {
-        // Simple auth for now using local storage
         localStorage.setItem('userToken', data.token)
         router.push(`/track/${data.token}`)
       } else {
-        setError(data.error || 'Invalid credentials')
+        setError(data.error || 'Invalid credentials. Check your Tracking ID and password.')
       }
-    } catch (err) {
-      setError('Something went wrong. Try again.')
+    } catch {
+      setError('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-6">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neon-blue/20 via-background to-background pointer-events-none" />
+    <div className="bg-[#FAFAFA] min-h-screen">
+      <Navbar />
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="glass-card w-full max-w-md p-8 relative z-10"
-      >
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-neon-blue">
-            <Package size={32} />
+      <section className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 pt-20 pb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <div className="bg-white border border-[#E8E8E8] rounded-3xl p-7 sm:p-9 shadow-[0_8px_40px_rgba(0,0,0,0.06)]">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#237227] to-[#1A5C1E] rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-[#237227]/20">
+                <Package size={28} className="text-white" />
+              </div>
+              <h1 className="text-[24px] sm:text-[28px] font-black tracking-tight text-[#0A0A0A] mb-2">Track Your Shipment</h1>
+              <p className="text-[14px] text-[#787878]">
+                Enter credentials provided by your sender
+              </p>
+            </div>
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-[13px] font-semibold"
+              >
+                {error}
+              </motion.div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div>
+                <label className="block text-[12px] font-bold tracking-[0.12em] uppercase text-[#0A0A0A] mb-2">
+                  Tracking ID
+                </label>
+                <div className="relative group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D0D0D0] group-focus-within:text-[#237227] transition-colors" size={17} />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. TRK12345678"
+                    value={trackingId}
+                    onChange={(e) => setTrackingId(e.target.value)}
+                    className="input-clean pl-11 h-13 text-[15px]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-bold tracking-[0.12em] uppercase text-[#0A0A0A] mb-2">
+                  Password
+                </label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D0D0D0] group-focus-within:text-[#237227] transition-colors" size={17} />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Your shipment password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input-clean pl-11 pr-12 h-13 text-[15px]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D0D0D0] hover:text-[#787878] transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-14 justify-center text-[15px] mt-3 inline-flex items-center gap-2 bg-gradient-to-r from-[#237227] to-[#1A5C1E] text-white font-semibold rounded-full border-0 cursor-pointer transition-all hover:shadow-[0_8px_24px_rgba(35,114,39,0.35)] hover:-translate-y-0.5 disabled:opacity-60"
+              >
+                {loading ? (
+                  <><Loader2 className="animate-spin" size={18} /> Verifying...</>
+                ) : (
+                  <>View Tracking Details <ArrowRight size={16} /></>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-7 pt-6 border-t border-[#F0F0EE]">
+              <p className="text-[13px] text-[#aaaaaa] text-center">
+                Don&rsquo;t have credentials?{' '}
+                <Link
+                  href="/contact"
+                  className="text-[#237227] font-semibold hover:text-[#1A5C1E] transition-colors"
+                >
+                  Contact us &rarr;
+                </Link>
+              </p>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-center">Track Shipment</h2>
-          <p className="text-white/60 text-sm mt-2 text-center">Enter your unique Tracking ID and Password provided by the sender.</p>
-        </div>
+        </motion.div>
+      </section>
 
-        {error && <div className="bg-red-500/20 border border-red-500/50 text-red-200 p-3 rounded-lg mb-6 text-sm text-center">{error}</div>}
-
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={18} />
-            <input
-              type="text"
-              required
-              placeholder="Tracking ID"
-              value={trackingId}
-              onChange={(e) => setTrackingId(e.target.value)}
-              className="glass-input w-full pl-12 h-12"
-            />
-          </div>
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={18} />
-            <input
-              type="password"
-              required
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="glass-input w-full pl-12 h-12"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="glass-button w-full h-12 flex items-center justify-center gap-2 mt-4"
-          >
-            {loading ? <Loader2 className="animate-spin" /> : 'View Tracking Details'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <button onClick={() => router.push('/')} className="text-white/40 hover:text-white transition-colors text-sm">
-            &larr; Back to Home
-          </button>
-        </div>
-      </motion.div>
+      <Footer />
     </div>
   )
 }
