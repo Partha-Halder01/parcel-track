@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 function generateTrackingId() {
   return 'TRK' + Math.floor(10000000 + Math.random() * 90000000).toString()
 }
