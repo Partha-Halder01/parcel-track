@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { query, queryOne, execute } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
@@ -12,18 +12,14 @@ export async function POST(req: NextRequest) {
     const { username, password } = await req.json()
 
     // Auto-create admin if not exists
-    const existing = await prisma.admin.findUnique({ where: { username: 'admin' } })
+    const existing = await queryOne<any>('SELECT id FROM Admin WHERE username = ?', ['admin'])
     if (!existing) {
       const hashedPassword = await bcrypt.hash('Hffwekfn424.@', 10)
-      await prisma.admin.create({
-        data: {
-          username: 'admin',
-          password: hashedPassword
-        }
-      })
+      const id = crypto.randomUUID()
+      await execute('INSERT INTO Admin (id, username, password, createdAt) VALUES (?, ?, ?, NOW())', [id, 'admin', hashedPassword])
     }
 
-    const admin = await prisma.admin.findUnique({ where: { username } })
+    const admin = await queryOne<any>('SELECT * FROM Admin WHERE username = ?', [username])
     if (!admin) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
@@ -37,6 +33,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, token })
   } catch (error) {
+    console.error(error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

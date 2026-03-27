@@ -1,27 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { queryOne, execute } from '@/lib/db'
 import crypto from 'crypto'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const shipment = await prisma.shipment.findUnique({ where: { id: params.id } })
+    const shipment = await queryOne<any>('SELECT id, shareToken FROM Shipment WHERE id = ?', [params.id])
     if (!shipment) return NextResponse.json({ error: 'Shipment not found' }, { status: 404 })
 
-    // If share token already exists, return it
     if (shipment.shareToken) {
       return NextResponse.json({ shareToken: shipment.shareToken })
     }
 
-    // Generate a secure random token
     const shareToken = crypto.randomBytes(32).toString('hex')
-
-    await prisma.shipment.update({
-      where: { id: params.id },
-      data: { shareToken },
-    })
+    await execute('UPDATE Shipment SET shareToken = ? WHERE id = ?', [shareToken, params.id])
 
     return NextResponse.json({ shareToken })
   } catch (error) {
+    console.error(error)
     return NextResponse.json({ error: 'Failed to generate share link' }, { status: 500 })
   }
 }

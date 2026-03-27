@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { query, queryOne, execute } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,26 +18,36 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '0')
     const search = searchParams.get('search') || ''
 
-    const where = search ? {
-      OR: [
-        { trackingId: { contains: search } },
-        { senderName: { contains: search } },
-        { receiverName: { contains: search } },
-        { address: { contains: search } },
-      ]
-    } : {}
+    let whereClause = ''
+    const params: any[] = []
 
-    const total = await prisma.shipment.count({ where })
+    if (search) {
+      whereClause = 'WHERE trackingId LIKE ? OR senderName LIKE ? OR receiverName LIKE ? OR address LIKE ?'
+      const s = `%${search}%`
+      params.push(s, s, s, s)
+    }
 
-    const shipments = await prisma.shipment.findMany({
-      where,
-      include: { timeline: true },
-      orderBy: { createdAt: 'desc' },
-      ...(limit > 0 ? { skip: (page - 1) * limit, take: limit } : {}),
-    })
+    const countResult = await queryOne<{ cnt: number }>(`SELECT COUNT(*) as cnt FROM Shipment ${whereClause}`, params)
+    const total = Number(countResult?.cnt || 0)
+
+    let limitClause = ''
+    const queryParams = [...params]
+    if (limit > 0) {
+      limitClause = 'LIMIT ? OFFSET ?'
+      queryParams.push(limit, (page - 1) * limit)
+    }
+
+    const shipments = await query(`SELECT * FROM Shipment ${whereClause} ORDER BY createdAt DESC ${limitClause}`, queryParams)
+
+    // Attach timeline events to each shipment
+    for (const shipment of shipments) {
+      const timeline = await query('SELECT * FROM TimelineEvent WHERE shipmentId = ? ORDER BY timestamp ASC', [shipment.id])
+      shipment.timeline = timeline
+    }
 
     return NextResponse.json({ shipments, total, page, totalPages: limit > 0 ? Math.ceil(total / limit) : 1 })
   } catch (error) {
+    console.error(error)
     return NextResponse.json({ error: 'Failed to fetch shipments' }, { status: 500 })
   }
 }
@@ -47,30 +57,24 @@ export async function POST(req: NextRequest) {
     const data = await req.json()
     const trackingId = generateTrackingId()
     const password = generatePassword()
+    const id = crypto.randomUUID()
 
-    const shipment = await prisma.shipment.create({
-      data: {
-        trackingId,
-        password,
-        senderName: data.senderName,
-        receiverName: data.receiverName,
-        address: data.address,
-        parcelType: data.parcelType,
-        estimatedDelivery: data.estimatedDelivery ? new Date(data.estimatedDelivery) : null,
-        timeline: {
-          create: [{
-            status: 'Order Placed',
-            description: 'Shipment has been created in the system',
-            location: data.address
-          }]
-        }
-      },
-      include: {
-        timeline: true
-      }
-    })
+    await execute(
+      `INSERT INTO Shipment (id, trackingId, password, senderName, receiverName, address, parcelType, status, estimatedDelivery, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'Order Placed', ?, NOW(), NOW())`,
+      [id, trackingId, password, data.senderName, data.receiverName, data.address, data.parcelType, data.estimatedDelivery ? new Date(data.estimatedDelivery) : null]
+    )
 
-    return NextResponse.json({ success: true, shipment })
+    const timelineId = crypto.randomUUID()
+    await execute(
+      'INSERT INTO TimelineEvent (id, shipmentId, status, description, location, timestamp) VALUES (?, ?, ?, ?, ?, NOW())',
+      [timelineId, id, 'Order Placed', 'Shipment has been created in the system', data.address]
+    )
+
+    const shipment = await queryOne('SELECT * FROM Shipment WHERE id = ?', [id])
+    const timeline = await query('SELECT * FROM TimelineEvent WHERE shipmentId = ? ORDER BY timestamp ASC', [id])
+
+    return NextResponse.json({ success: true, shipment: { ...shipment, timeline } })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Failed to create shipment' }, { status: 500 })
