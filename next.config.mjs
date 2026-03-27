@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'standalone',
+  experimental: {
+    serverComponentsExternalPackages: ['mysql2'],
+  },
   images: {
     unoptimized: true,
   },

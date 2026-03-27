@@ -6,8 +6,7 @@ export function getPool(): mysql.Pool {
   if (!pool) {
     const url = new URL(process.env.DATABASE_URL || '')
     pool = mysql.createPool({
-      host: url.hostname,
-      port: parseInt(url.port || '3306'),
+      socketPath: '/var/lib/mysql/mysql.sock',
       user: decodeURIComponent(url.username),
       password: decodeURIComponent(url.password),
       database: url.pathname.slice(1),
